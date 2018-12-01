@@ -104,7 +104,7 @@ Assuming JSON file in `/in/files/`.
 ```json
 {
     "definition": {
-        "component": "kds-team.processor-xml2csv"
+        "component": "kds-team.processor-json2csv"
     },
     "parameters" : {
 	"mapping" : {
