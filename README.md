@@ -62,11 +62,9 @@ Converts JSON files to CSV.
 		}
 	}
 }
-
+```
 
 ### Simple Example
-
-#### Simple example #1
 Assuming JSON file in `/in/files/`.
 #### Configuration
 ```json
