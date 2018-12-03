@@ -4,7 +4,7 @@
 Keboola Connection processor for JSON to CSV conversion.
 
 
-Converts JSON files to CSV. 
+Converts JSON files to CSV. May be used as an easier way of parsing JSON values than directly in `Snowflake SQL` in conjunction with [Column to Files app](https://bitbucket.org/kds_consulting_team/kds-team.app-column-to-files)
 
 **Credits:**
 - For JSON2CSV conversion uses Keboola developed [Json parser](https://github.com/keboola/php-jsonparser) and [CsvMap](https://github.com/keboola/php-csvmap) for analysis and automatic conversion from JSON to CSV. Supports Generic Ex -like mapping configuration.
