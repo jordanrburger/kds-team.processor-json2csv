@@ -51,7 +51,7 @@ class Processor {
             $json_result_root = $this->getRoot(json_decode($json_string));
             $this->jsonParser->parse($json_result_root, $this->add_row_nr);
 
-            file_put_contents($outputDir . $file->getFileName() . '.json', json_encode($json_result_root));
+            // file_put_contents($outputDir . $file->getFileName() . '.json', json_encode($json_result_root));
         }
         $this->logger->info("Writting results..");
         $csv_files = $this->jsonParser->getCsvFiles();
