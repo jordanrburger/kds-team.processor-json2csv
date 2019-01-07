@@ -29,8 +29,4 @@ class Config extends BaseConfig {
         return $this->getValue(['parameters', 'in_type']);
     }
 
-    public function getForceArrayAttributes(): array {
-        return $this->getValue(['parameters', 'always_array']);
-    }
-
 }
