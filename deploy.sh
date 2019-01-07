@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+if [ $BITBUCKET_BRANCH != "master" ]; then
+               echo Deploy on tagged commit can be only executed in master!
+               exit 1
+fi
 docker pull quay.io/keboola/developer-portal-cli-v2:latest
 export REPOSITORY=`docker run --rm  \
     -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD \

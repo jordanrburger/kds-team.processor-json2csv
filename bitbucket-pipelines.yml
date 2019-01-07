@@ -13,6 +13,7 @@ pipelines:
   tags:
     '*':
       - step:
+          deployment: production
           script:
           - docker -v
           - docker build -t $APP_IMAGE .
