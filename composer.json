@@ -1,17 +1,17 @@
 {
     "autoload": {
         "psr-4": {
-            "esnerda\\XML2CsvProcessor\\": "src/"
+            "esnerda\\Json2CsvProcessor\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "esnerda\\XML2CsvProcessor\\Tests\\": "tests/phpunit/"
+            "esnerda\\Json2CsvProcessor\\Tests\\": "tests/phpunit/"
         }
     },
-    "name": "esnerda/xml2csvprocessor",
+    "name": "esnerda/json2csvprocessor",
     "license": "MIT",
-    "description": "Convert XML files to CSV",
+    "description": "Convert Json files to CSV",
     "type": "project",
     "require": {
         "PHP": "^7.1",
@@ -28,7 +28,7 @@
         "slevomat/coding-standard": "4.4.6",
         "squizlabs/php_codesniffer": "~3.2",
         "symfony/process": "^4.0",
-        "keboola/datadir-tests": "^1.0"
+        "keboola/datadir-tests": "2.3.1"
     },
     "config": {
         "sort-packages": true,
@@ -36,15 +36,16 @@
     },
     "scripts": {
         "tests-phpunit": "phpunit",
-        "tests-datadir": "datadir-tests",
+        "tests-datadir": "phpunit tests/functional",
         "tests": [
             "@tests-phpunit",
             "@tests-datadir"
+        ],        
+        "build": [
+            "@tests"
         ],
-
-        "build": [],
         "ci": [
-            "@composer validate --no-check-all --strict",
+            "@composer validate --no-check-publish --no-check-all",
             "@build"
         ]
     }

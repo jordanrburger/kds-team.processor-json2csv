@@ -1,12 +1,12 @@
 <?php
 
-namespace esnerda\XML2CsvProcessor;
+namespace esnerda\Json2CsvProcessor;
 
 use Keboola\Component\UserException;
 use Symfony\Component\Finder\Finder;
-use esnerda\XML2CsvProcessor\XML2JsonConverter;
 
-class Processor {
+class Processor
+{
 
     /** @var  string */
     private $jsonParser;
@@ -19,7 +19,8 @@ class Processor {
     /** @var LoggerInterface */
     private $logger;
 
-    public function __construct($jsonParser, bool $add_row_nr, bool $incremental, string $root_el, $logger) {
+    public function __construct($jsonParser, bool $add_row_nr, bool $incremental, string $root_el, $logger)
+    {
         $this->jsonParser = $jsonParser;
         $this->add_row_nr = $add_row_nr;
         $this->incremental = $incremental;
@@ -27,39 +28,40 @@ class Processor {
         $this->logger = $logger;
     }
 
-    public function convert(string $datadir, string $type): self {
-
+    public function convert(string $datadir, string $type): self
+    {
         return $this->processFiles(
-                        sprintf("%s/in/" . $type . '/', $datadir), sprintf("%s/out/tables/", $datadir)
+                        sprintf("%s/in/" . $type . '/', $datadir),
+            sprintf("%s/out/tables/", $datadir)
         );
     }
 
-    private function processFiles(string $inputDir, string $outputDir): self {
-        
+    private function processFiles(string $inputDir, string $outputDir): self
+    {
         $finderFiles = new Finder();
-
-        $finderFiles->files()->in($inputDir)->notName('*.manifest');      
+        
+        $finderFiles->files()->in($inputDir)->notName('*.manifest');
+        $finderFiles->sortByName();
         $manifests = $this->getManifests($inputDir);
 
         foreach ($finderFiles as $file) {
             $this->logger->info("Parsing file " . $file->getFileName());
 
-            $json_string = file_get_contents($file->getRealPath());            
+            $json_string = file_get_contents($file->getRealPath());
             // get root if specified
             $json_result_root = $this->getRoot(json_decode($json_string));
             $this->jsonParser->parse($json_result_root, $this->add_row_nr);
-
-            // file_put_contents($outputDir . $file->getFileName() . '.json', json_encode($json_result_root));
         }
+
         $this->logger->info("Writting results..");
         $csv_files = $this->jsonParser->getCsvFiles();
         $this->storeResults($outputDir, $csv_files, $this->incremental);
         return $this;
     }
 
-    private function getRoot($json) {
-
-        if ($this->root_el != NULL) {
+    private function getRoot($json)
+    {
+        if ($this->root_el != null) {
             $nodes = explode('.', $this->root_el);
             $root = $json;
             foreach ($nodes as $node) {
@@ -71,7 +73,8 @@ class Processor {
         }
     }
 
-    private function getManifests($inputDir) {
+    private function getManifests($inputDir)
+    {
         $finderManifests = new Finder();
         $manifests = [];
         $finderManifests->files()->in($inputDir)->name('*.manifest');
@@ -92,10 +95,9 @@ class Processor {
      * @param bool $incremental Set the incremental flag in manifest
      * TODO: revisit this
      */
-    private function storeResults(string $outdir, array $csvFiles, $incremental = false, $bucketName = null, $sapiPrefix = true) {
-
+    private function storeResults(string $outdir, array $csvFiles, $incremental = false, $bucketName = null, $sapiPrefix = true)
+    {
         foreach ($csvFiles as $key => $file) {
-
             $path = $outdir;
 
             if (!is_null($bucketName)) {
@@ -122,5 +124,4 @@ class Processor {
             copy($file->getPathname(), $path . $resFileName);
         }
     }
-
 }

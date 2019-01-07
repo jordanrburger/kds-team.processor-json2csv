@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace esnerda\XML2CsvProcessor;
+namespace esnerda\Json2CsvProcessor;
 
 use Keboola\Component\BaseComponent;
 

@@ -6,7 +6,7 @@
  * and open the template in the editor.
  */
 
-namespace esnerda\XML2CsvProcessor;
+namespace esnerda\Json2CsvProcessor;
 
 use Keboola\Json\Analyzer;
 use Keboola\Json\Parser;
