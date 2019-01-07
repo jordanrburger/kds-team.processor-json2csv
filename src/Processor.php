@@ -15,15 +15,13 @@ class Processor {
     /** @var  bool */
     private $incremental;
     private $add_row_nr;
-    private $forceArrayAttrs;
 
     /** @var LoggerInterface */
     private $logger;
 
-    public function __construct($jsonParser, bool $add_row_nr, $forceArrayAttrs, bool $incremental, string $root_el, $logger) {
+    public function __construct($jsonParser, bool $add_row_nr, bool $incremental, string $root_el, $logger) {
         $this->jsonParser = $jsonParser;
         $this->add_row_nr = $add_row_nr;
-        $this->forceArrayAttrs = $forceArrayAttrs;
         $this->incremental = $incremental;
         $this->root_el = $root_el;
         $this->logger = $logger;

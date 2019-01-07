@@ -30,5 +30,5 @@ try {
         'errPrevious' => $e->getPrevious() ? get_class($e->getPrevious()) : '',
             ]
     );
-    exit(2);
+    exit(1);
 }
