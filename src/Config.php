@@ -21,6 +21,10 @@ class Config extends BaseConfig {
         return $this->getValue(['parameters', 'incremental']);
     }
 
+    public function addFileName(): bool {
+        return $this->getValue(['parameters', 'add_file_name']);
+    }
+
     public function getRootNode(): string {
         return $this->getValue(['parameters', 'root_node']);
     }

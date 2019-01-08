@@ -1,0 +1,13 @@
+{
+    "parameters": {
+        "mapping": [],
+        "incremental": false,
+        "root_node": "",
+        "in_type": "files",
+        "add_file_name": true 
+    },
+    "image_parameters": {},
+    "action": "run",
+    "storage": {},
+    "authorization": {}
+}
