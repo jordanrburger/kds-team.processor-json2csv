@@ -123,6 +123,10 @@ class Processor
         foreach ($csvFiles as $key => $file) {
             $path = $outdir;
 
+            if ($file == null) {
+                $this->logger->info("No results parsed.");
+                return $this;
+            }
             if (!is_null($bucketName)) {
                 $path .= $bucketName . '/';
                 $bucketName = $sapiPrefix ? 'in.c-' . $bucketName : $bucketName;
