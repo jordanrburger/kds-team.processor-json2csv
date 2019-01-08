@@ -15,6 +15,7 @@ Converts JSON files to CSV. May be used as an easier way of parsing JSON values 
 - **in_type** (enum [`files`,`tables`]) -  specifies the input folder where to look for input data. e.g. when set to `table` the processor will look for inpu in `/in/tables/` folder.
 - **incremental** (bool) - flag whether the resulting tables should be uploaded incrementally. Makes most sense with mapping setup, since it allows you to specify primary keys.
 - **root_node** (string) - `.` separated path to the root node of the resulting JSON - usually you only want to map the root array, not all the wrapper tags. For more info see examples below.
+- **add_file_name** (bool) - default `false` - flag whether to add the source file name column to the root object. The resulting column name is `keboola_file_name_col`. **NOTE**: Note that when you specify `root_node` the new column is added there. Also when using mapping you need to specify the mapping also for the new column name.
 
 ## Examples
 
@@ -82,9 +83,11 @@ Assuming JSON file in `/in/files/`.
 ```
 The above produces two tables according to mapping setting `order.csv`:
 
-| root_el_orders_order |
-|--|
 | root_el.root_el.orders_a91b89e33c2b324f4204686aa64a0d5f |
+| root_el_orders_order_id | root_el_orders_order_date | root_el_orders_customer_name |
+|--|--|--|
+| 1 |  2018-01-01| David |
+| 2 |  2018-01-02|  Tom|
 
 
 and `root_el_root_el_orders_order_order-item.csv`:
@@ -96,6 +99,39 @@ and `root_el_root_el_orders_order_order-item.csv`:
 | GBP | 100| Sun Screen|1|root_el.root_el.orders.order_d3859e7943e09800b982215f5c4434c6
 
 
+### Simple Example - Add file name column
+Assuming JSON file in `/in/files/`.
+#### Configuration
+```json
+{
+    "definition": {
+        "component": "kds-team.processor-json2csv"
+    },
+    "parameters" : {
+	"mapping" : {},
+	"incremental":true,
+	"root_node" : "",
+	"in_type": "files",
+	"add_file_name" : true
+	}
+}
+```
+The above produces two tables according to mapping setting `order.csv`:
+
+| root_el.root_el.orders_a91b89e33c2b324f4204686aa64a0d5f |
+| root_el_orders_order_id | root_el_orders_order_date | root_el_orders_customer_name | root_el_keboola_file_name_col
+|--|--|--|--|
+| 1 |  2018-01-01| David | sample.json |
+| 2 |  2018-01-02|  Tom| sample.json |
+
+
+and `root_el_root_el_orders_order_order-item.csv`:
+
+| price_xml_attr_currency | price_txt_content | item | row_nr| JSON_parentId
+|--|--|--|--|--|
+| CZK | 100| Umbrella |1|root_el.root_el.orders.order_d3859e7943e09800b982215f5c4434c6
+| CZK | 200| Rain Coat|2|root_el.root_el.orders.order_d3859e7943e09800b982215f5c4434c6
+| GBP | 100| Sun Screen|1|root_el.root_el.orders.order_d3859e7943e09800b982215f5c4434c6
 
 
 ### Advanced Example 1 - nested arrays, with mapping
