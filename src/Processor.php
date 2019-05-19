@@ -7,7 +7,6 @@ use Symfony\Component\Finder\Finder;
 
 class Processor
 {
-
     const FILE_NAME_COL_NAME = 'keboola_file_name_col';
     /** @var  string */
     private $jsonParser;
@@ -68,16 +67,17 @@ class Processor
         return $this;
     }
 
-    private function addFileName($json, $fileName, $colName){
+    private function addFileName($json, $fileName, $colName)
+    {
         // convert to arrays
         $json_arr = json_decode($json, true);
         // add filename col to root
-        if (!is_array($json_arr)){
+        if (!is_array($json_arr)) {
             $json_arr[$colName] = $fileName;
         } else {
             // if its array, add field to all members
             foreach ($json_arr as $key => $entry) {
-                    $json_arr[$key][$colName] = $fileName;
+                $json_arr[$key][$colName] = $fileName;
             }
         }
         return json_decode(json_encode($json_arr));
