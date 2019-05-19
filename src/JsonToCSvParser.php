@@ -18,13 +18,14 @@ use Keboola\CsvMap\Mapper;
  *
  * @author esner
  */
-class JsonToCSvParser {
-
+class JsonToCSvParser
+{
     private $logger;
     private $parser;
     private $type;
 
-    public function __construct($mapping, $logger, $type) {
+    public function __construct($mapping, $logger, $type)
+    {
         $this->logger = $logger;
         $this->type = $type;
         if ($mapping) {
@@ -34,7 +35,8 @@ class JsonToCSvParser {
         }
     }
 
-    public function parse($json_data) {
+    public function parse($json_data)
+    {
         $type = $this->getType($json_data);
         if (!is_array($json_data)) {
             $json_data = [$json_data];
@@ -46,23 +48,26 @@ class JsonToCSvParser {
         }
     }
 
-    public function getCsvFiles() {
-
+    public function getCsvFiles()
+    {
         return $this->parser->getCsvFiles();
     }
 
-    private function getType($json_data) {
+    private function getType($json_data)
+    {
         $type = key($json_data);
-        if ($type == 0) {
+        if (!is_string ($type)) {
             $type = 'root';
         }
         return $type;
     }
 
-    public function getResult() {
+    public function getResult()
+    {
         return $this->parser->getCsvFiles();
     }
 
-    private function addRowNumber($json) {
+    private function addRowNumber($json)
+    {
     }
 }
