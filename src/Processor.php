@@ -2,6 +2,7 @@
 
 namespace esnerda\Json2CsvProcessor;
 
+use Keboola\Component\Manifest\ManifestManager;
 use Keboola\CsvTable\Table;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Finder\Finder;
@@ -10,23 +11,17 @@ class Processor
 {
     const FILE_NAME_COL_NAME = 'keboola_file_name_col';
 
-    private JsonToCSvParser $jsonParser;
-    private $root_el;
-
-    private bool $incremental;
-    private $add_row_nr;
-    private $addFileName;
-
-    private LoggerInterface $logger;
-
-    public function __construct($jsonParser, bool $add_row_nr, bool $incremental, string $root_el, bool $addFileName, $logger)
+    public function __construct(
+        private JsonToCSvParser $jsonParser,
+        private ManifestManager $manifestManager,
+        private bool $add_row_nr,
+        private bool $incremental,
+        private string $root_el,
+        private bool $addFileName,
+        private bool $usingLegacyManifest,
+        private LoggerInterface $logger,
+    )
     {
-        $this->jsonParser = $jsonParser;
-        $this->add_row_nr = $add_row_nr;
-        $this->incremental = $incremental;
-        $this->root_el = $root_el;
-        $this->addFileName = $addFileName;
-        $this->logger = $logger;
     }
 
     public function convert(string $datadir, string $type): void
@@ -117,14 +112,15 @@ class Processor
             }
 
             $resFileName = $key . '.csv';
-            $manifest = [];
 
-            $manifest['incremental'] = $file->isIncrementalSet() ? $file->getIncremental() : $incremental;
+            $manifestNew = $this->manifestManager->getTableManifest($resFileName);
+            $manifestNew->setIncremental($file->isIncrementalSet() ? $file->getIncremental() : $incremental);
             if (!empty($file->getPrimaryKey())) {
-                $manifest['primary_key'] = $file->getPrimaryKey(true);
+                $manifestNew->setLegacyPrimaryKeys($file->getPrimaryKey(true));
             }
+
             $this->logger->info("Writing result file: " . $resFileName);
-            file_put_contents($path . $resFileName . '.manifest', json_encode($manifest));
+            $this->manifestManager->writeTableManifest($resFileName, $manifestNew, $this->usingLegacyManifest);
             copy($file->getPathname(), $path . $resFileName);
         }
     }

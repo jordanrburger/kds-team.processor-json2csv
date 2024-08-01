@@ -214,16 +214,16 @@
         },
         {
             "name": "keboola/php-component",
-            "version": "10.1.3",
+            "version": "10.1.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/php-component.git",
-                "reference": "55fcdffdd80192b93f60bea3f8be6ea79485bdb5"
+                "reference": "ed4ddea277ceb443567e10204a5d86576d7ffe7a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/php-component/zipball/55fcdffdd80192b93f60bea3f8be6ea79485bdb5",
-                "reference": "55fcdffdd80192b93f60bea3f8be6ea79485bdb5",
+                "url": "https://api.github.com/repos/keboola/php-component/zipball/ed4ddea277ceb443567e10204a5d86576d7ffe7a",
+                "reference": "ed4ddea277ceb443567e10204a5d86576d7ffe7a",
                 "shasum": ""
             },
             "require": {
@@ -268,9 +268,9 @@
             ],
             "support": {
                 "issues": "https://github.com/keboola/php-component/issues",
-                "source": "https://github.com/keboola/php-component/tree/10.1.3"
+                "source": "https://github.com/keboola/php-component/tree/10.1.4"
             },
-            "time": "2024-07-25T08:30:59+00:00"
+            "time": "2024-07-30T13:34:46+00:00"
         },
         {
             "name": "keboola/php-csvtable",

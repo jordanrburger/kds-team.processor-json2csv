@@ -14,17 +14,17 @@ class Component extends BaseComponent {
             $nodes = explode('.', $this->getConfig()->getRootNode());
             $type = $nodes[count($nodes) - 1];
         }
-        $jsonParser = new JsonToCSvParser($this->getConfig()->getMapping(), $this->getLogger(), $type);
 
         $processor = new Processor(
-                $jsonParser, $this->getConfig()->getAppendRowNr(),
-                $this->getConfig()->isIncremental(), 
-                $this->getConfig()->getRootNode(),
-                $this->getConfig()->addFileName(),
-                $this->getLogger()
+            new JsonToCSvParser($this->getConfig()->getMapping(), $this->getLogger(), $type),
+            $this->getManifestManager(),
+            $this->getConfig()->getAppendRowNr(),
+            $this->getConfig()->isIncremental(),
+            $this->getConfig()->getRootNode(),
+            $this->getConfig()->addFileName(),
+            $this->getConfig()->getDataTypeSupport()->usingLegacyManifest(),
+            $this->getLogger()
         );
-
-
 
         $processor->convert($this->getDataDir(), $this->getConfig()->getInputType());
     }
