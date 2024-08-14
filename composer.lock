@@ -214,16 +214,16 @@
         },
         {
             "name": "keboola/php-component",
-            "version": "10.1.4",
+            "version": "10.1.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/php-component.git",
-                "reference": "ed4ddea277ceb443567e10204a5d86576d7ffe7a"
+                "reference": "9f8f43eb6077840cb648e12bedebd58d00667a5b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/php-component/zipball/ed4ddea277ceb443567e10204a5d86576d7ffe7a",
-                "reference": "ed4ddea277ceb443567e10204a5d86576d7ffe7a",
+                "url": "https://api.github.com/repos/keboola/php-component/zipball/9f8f43eb6077840cb648e12bedebd58d00667a5b",
+                "reference": "9f8f43eb6077840cb648e12bedebd58d00667a5b",
                 "shasum": ""
             },
             "require": {
@@ -268,9 +268,9 @@
             ],
             "support": {
                 "issues": "https://github.com/keboola/php-component/issues",
-                "source": "https://github.com/keboola/php-component/tree/10.1.4"
+                "source": "https://github.com/keboola/php-component/tree/10.1.5"
             },
-            "time": "2024-07-30T13:34:46+00:00"
+            "time": "2024-08-14T06:41:30+00:00"
         },
         {
             "name": "keboola/php-csvtable",
@@ -2351,16 +2351,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.11.8",
+            "version": "1.11.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "6adbd118e6c0515dd2f36b06cde1d6da40f1b8ec"
+                "reference": "640410b32995914bde3eed26fa89552f9c2c082f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/6adbd118e6c0515dd2f36b06cde1d6da40f1b8ec",
-                "reference": "6adbd118e6c0515dd2f36b06cde1d6da40f1b8ec",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/640410b32995914bde3eed26fa89552f9c2c082f",
+                "reference": "640410b32995914bde3eed26fa89552f9c2c082f",
                 "shasum": ""
             },
             "require": {
@@ -2405,7 +2405,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-07-24T07:01:22+00:00"
+            "time": "2024-08-08T09:02:50+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
