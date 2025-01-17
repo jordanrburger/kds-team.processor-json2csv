@@ -64,4 +64,4 @@ impl Config {
         // Add validation logic here if needed
         Ok(())
     }
-} 
+}

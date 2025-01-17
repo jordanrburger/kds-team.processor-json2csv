@@ -1,15 +1,15 @@
+use anyhow::Result;
+use json2csv_processor::config::{Config, InputType, Parameters};
+use json2csv_processor::parser::Parser;
+use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
-use anyhow::Result;
-use serde_json::{json, Value};
-use json2csv_processor::config::{Config, InputType, Parameters};
-use json2csv_processor::parser::Parser;
 
 fn setup_test_dir(test_name: &str) -> Result<PathBuf> {
     let test_dir = PathBuf::from(format!("tests/functional/{}", test_name));
     fs::create_dir_all(&test_dir)?;
-    
+
     // Copy source files to in/files or in/tables
     let source_dir = PathBuf::from(format!("tests/functional/{}/source", test_name));
     if source_dir.exists() {
@@ -36,18 +36,30 @@ fn setup_test_dir(test_name: &str) -> Result<PathBuf> {
 
     match test_name {
         "basic-sample-2-files" => {
-            fs::write(test_dir.join("expected/root.csv"), "id,name\n\"1\",\"First\"\n\"2\",\"Second \"\n")?;
+            fs::write(
+                test_dir.join("expected/root.csv"),
+                "id,name\n\"1\",\"First\"\n\"2\",\"Second \"\n",
+            )?;
         }
         "basic-sample-2-tables" => {
-            fs::write(test_dir.join("expected/root.csv"), "id,name\n\"1\",\"First\"\n")?;
+            fs::write(
+                test_dir.join("expected/root.csv"),
+                "id,name\n\"1\",\"First\"\n",
+            )?;
             fs::write(test_dir.join("expected/items.csv"), "item_id,quantity,JSON_parentId\n\"1\",\"10\",\"items_0\"\n\"2\",\"20\",\"items_1 \"\n")?;
         }
         "basic-sample-2-tables-root-el" => {
             fs::write(test_dir.join("expected/root.csv"), "id\n\"1\"\n")?;
-            fs::write(test_dir.join("expected/items.csv"), "item_id,quantity,JSON_parentId\n\"2 \",\"\",\"items_0\"\n")?;
+            fs::write(
+                test_dir.join("expected/items.csv"),
+                "item_id,quantity,JSON_parentId\n\"2 \",\"\",\"items_0\"\n",
+            )?;
         }
         "sample-2-tables-add-file-name" => {
-            fs::write(test_dir.join("expected/root.csv"), "id,name,keboola_file_name_col\n\"1\",\"Test\",\"sample.json \"\n")?;
+            fs::write(
+                test_dir.join("expected/root.csv"),
+                "id,name,keboola_file_name_col\n\"1\",\"Test\",\"sample.json \"\n",
+            )?;
             fs::write(test_dir.join("expected/items.csv"), "item_id,quantity,JSON_parentId\n\"A\",\"10\",\"items_0\"\n\"B\",\"20\",\"items_1 \"\n")?;
         }
         "sample-2-tables-root-el-mapping" => {
@@ -90,7 +102,11 @@ fn compare_csv_files(actual_path: &Path, expected_path: &Path) -> Result<()> {
     let actual_rows: Vec<_> = actual_reader.records().collect::<Result<_, _>>()?;
     let expected_rows: Vec<_> = expected_reader.records().collect::<Result<_, _>>()?;
 
-    assert_eq!(actual_rows.len(), expected_rows.len(), "Row count doesn't match");
+    assert_eq!(
+        actual_rows.len(),
+        expected_rows.len(),
+        "Row count doesn't match"
+    );
 
     for (actual_row, expected_row) in actual_rows.iter().zip(expected_rows.iter()) {
         assert_eq!(actual_row, expected_row, "Rows don't match");
@@ -120,7 +136,8 @@ fn test_basic_sample_2_files() -> Result<()> {
         json!({
             "id": "1",
             "name": "First"
-        }).to_string(),
+        })
+        .to_string(),
     )?;
 
     fs::write(
@@ -128,7 +145,8 @@ fn test_basic_sample_2_files() -> Result<()> {
         json!({
             "id": "2",
             "name": "Second "
-        }).to_string(),
+        })
+        .to_string(),
     )?;
 
     let mut parser = Parser::new(config, test_dir.join("out/tables"));
@@ -175,7 +193,8 @@ fn test_basic_sample_2_tables() -> Result<()> {
                     "quantity": "20"
                 }
             ]
-        }).to_string(),
+        })
+        .to_string(),
     )?;
 
     let mut parser = Parser::new(config, test_dir.join("out/tables"));
@@ -222,7 +241,8 @@ fn test_sample_with_root_node() -> Result<()> {
                     }
                 ]
             }
-        }).to_string(),
+        })
+        .to_string(),
     )?;
 
     let mut parser = Parser::new(config, test_dir.join("out/tables"));
@@ -273,7 +293,8 @@ fn test_sample_with_file_name() -> Result<()> {
                     "quantity": "20"
                 }
             ]
-        }).to_string(),
+        })
+        .to_string(),
     )?;
 
     let mut parser = Parser::new(config, test_dir.join("out/tables"));
@@ -377,7 +398,8 @@ fn test_sample_with_mapping() -> Result<()> {
                     ]
                 }
             ]
-        }).to_string(),
+        })
+        .to_string(),
     )?;
 
     let mut parser = Parser::new(config, test_dir.join("out/tables"));
@@ -390,4 +412,4 @@ fn test_sample_with_mapping() -> Result<()> {
     )?;
 
     Ok(())
-} 
+}

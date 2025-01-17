@@ -1,15 +1,14 @@
+use anyhow::Result;
 use std::env;
 use std::fs;
 use std::path::PathBuf;
-use anyhow::Result;
 use walkdir::WalkDir;
 
 use json2csv_processor::config::{Config, InputType};
 use json2csv_processor::parser;
 
 fn main() -> Result<()> {
-    let data_dir = env::var("KBC_DATADIR")
-        .unwrap_or_else(|_| "/data".to_string());
+    let data_dir = env::var("KBC_DATADIR").unwrap_or_else(|_| "/data".to_string());
 
     let config_path = PathBuf::from(&data_dir).join("config.json");
     let config: Config = serde_json::from_str(&fs::read_to_string(&config_path)?)?;
