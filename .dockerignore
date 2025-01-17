@@ -1,1 +1,24 @@
-vendor/
+# Rust specific
+target/
+Cargo.lock
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+
+# Backup files
+php_backup/
+
+# Tests
+tests/
+
+# Documentation
+*.md
+
+# Misc
+.env
+*.log

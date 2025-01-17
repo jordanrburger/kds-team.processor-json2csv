@@ -1,29 +1,15 @@
-FROM php:8.2-cli
+FROM rust:1.74-slim as builder
 
-ARG COMPOSER_FLAGS="--prefer-dist --no-interaction"
-ARG DEBIAN_FRONTEND=noninteractive
-ENV COMPOSER_ALLOW_SUPERUSER 1
+WORKDIR /app
+COPY . .
 
-WORKDIR /code/
+RUN cargo build --release
 
-COPY docker/php-prod.ini /usr/local/etc/php/php.ini
-COPY docker/composer-install.sh /tmp/composer-install.sh
+FROM debian:bookworm-slim
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        git \
-        unzip \
-	&& rm -r /var/lib/apt/lists/* \
-	&& chmod +x /tmp/composer-install.sh \
-	&& /tmp/composer-install.sh
+WORKDIR /app
+COPY --from=builder /app/target/release/kds-team.processor-json2csv /usr/local/bin/
 
-## Composer - deps always cached unless changed
-# First copy only composer files
-COPY composer.* /code/
-# Download dependencies, but don't run scripts or init autoloaders as the app is missing
-RUN composer install $COMPOSER_FLAGS --no-scripts --no-autoloader
-# copy rest of the app
-COPY . /code/
-# run normal composer - all deps are cached already
-RUN composer install $COMPOSER_FLAGS
+ENV RUST_LOG=info
 
-CMD ["php", "/code/src/run.php"]
+CMD ["kds-team.processor-json2csv"]
