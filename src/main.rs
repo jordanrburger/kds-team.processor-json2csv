@@ -31,9 +31,9 @@ fn main() -> Result<()> {
         let entry = entry?;
         let path = entry.path();
 
-        if path.is_file() && path.extension().map_or(false, |ext| ext == "json") {
+        if path.is_file() && path.extension().is_some_and(|ext| ext == "json") {
             println!("Processing file: {}", path.display());
-            if let Err(e) = parser.process_file(&path) {
+            if let Err(e) = parser.process_file(path) {
                 eprintln!("Error processing file {}: {}", path.display(), e);
                 return Err(e);
             }
