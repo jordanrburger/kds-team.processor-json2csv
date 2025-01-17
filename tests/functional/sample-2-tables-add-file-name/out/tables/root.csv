@@ -1,2 +1,2 @@
-"keboola_file_name_col"
-"sample.json "
+id,name,keboola_file_name_col
+"1","Test","sample.json "

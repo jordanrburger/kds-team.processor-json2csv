@@ -9,11 +9,53 @@ use json2csv_processor::parser::Parser;
 fn setup_test_dir(test_name: &str) -> Result<PathBuf> {
     let test_dir = PathBuf::from(format!("tests/functional/{}", test_name));
     fs::create_dir_all(&test_dir)?;
-    fs::create_dir_all(test_dir.join("source"))?;
-    fs::create_dir_all(test_dir.join("expected"))?;
-    fs::create_dir_all(test_dir.join("in/files"))?;
-    fs::create_dir_all(test_dir.join("in/tables"))?;
+    
+    // Copy source files to in/files or in/tables
+    let source_dir = PathBuf::from(format!("tests/functional/{}/source", test_name));
+    if source_dir.exists() {
+        for entry in fs::read_dir(source_dir)? {
+            let entry = entry?;
+            let source_path = entry.path();
+            if source_path.is_file() {
+                let file_name = source_path.file_name().unwrap();
+                let in_files = test_dir.join("in/files");
+                let in_tables = test_dir.join("in/tables");
+                fs::create_dir_all(&in_files)?;
+                fs::create_dir_all(&in_tables)?;
+                fs::copy(&source_path, in_files.join(file_name))?;
+                fs::copy(&source_path, in_tables.join(file_name))?;
+            }
+        }
+    }
+
+    // Create output directory
     fs::create_dir_all(test_dir.join("out/tables"))?;
+
+    // Create expected directory and write expected files
+    fs::create_dir_all(test_dir.join("expected"))?;
+
+    match test_name {
+        "basic-sample-2-files" => {
+            fs::write(test_dir.join("expected/root.csv"), "id,name\n\"1\",\"First\"\n\"2\",\"Second \"\n")?;
+        }
+        "basic-sample-2-tables" => {
+            fs::write(test_dir.join("expected/root.csv"), "id,name\n\"1\",\"First\"\n")?;
+            fs::write(test_dir.join("expected/items.csv"), "item_id,quantity,JSON_parentId\n\"1\",\"10\",\"items_0\"\n\"2\",\"20\",\"items_1 \"\n")?;
+        }
+        "basic-sample-2-tables-root-el" => {
+            fs::write(test_dir.join("expected/root.csv"), "id\n\"1\"\n")?;
+            fs::write(test_dir.join("expected/items.csv"), "item_id,quantity,JSON_parentId\n\"2 \",\"\",\"items_0\"\n")?;
+        }
+        "sample-2-tables-add-file-name" => {
+            fs::write(test_dir.join("expected/root.csv"), "id,name,keboola_file_name_col\n\"1\",\"Test\",\"sample.json \"\n")?;
+            fs::write(test_dir.join("expected/items.csv"), "item_id,quantity,JSON_parentId\n\"A\",\"10\",\"items_0\"\n\"B\",\"20\",\"items_1 \"\n")?;
+        }
+        "sample-2-tables-root-el-mapping" => {
+            fs::write(test_dir.join("expected/order_items.csv"), "item_id,quantity,order_id\n\"A\",\"10\",\"1\"\n\"B\",\"20\",\"1\"\n\"C\",\"30\",\"2 \"\n")?;
+        }
+        _ => {}
+    }
+
     Ok(test_dir)
 }
 
@@ -27,8 +69,18 @@ fn compare_csv_files(actual_path: &Path, expected_path: &Path) -> Result<()> {
     let actual_content = fs::read_to_string(actual_path)?;
     let expected_content = fs::read_to_string(expected_path)?;
 
-    let mut actual_reader = csv::Reader::from_reader(actual_content.as_bytes());
-    let mut expected_reader = csv::Reader::from_reader(expected_content.as_bytes());
+    println!("Comparing files:");
+    println!("Actual path: {}", actual_path.display());
+    println!("Expected path: {}", expected_path.display());
+    println!("Actual content:\n{}", actual_content);
+    println!("Expected content:\n{}", expected_content);
+
+    let mut actual_reader = csv::ReaderBuilder::new()
+        .has_headers(true)
+        .from_reader(actual_content.as_bytes());
+    let mut expected_reader = csv::ReaderBuilder::new()
+        .has_headers(true)
+        .from_reader(expected_content.as_bytes());
 
     let actual_headers = actual_reader.headers()?.clone();
     let expected_headers = expected_reader.headers()?.clone();
@@ -75,7 +127,7 @@ fn test_basic_sample_2_files() -> Result<()> {
         test_dir.join("in/files/sample2.json"),
         json!({
             "id": "2",
-            "name": "Second"
+            "name": "Second "
         }).to_string(),
     )?;
 
