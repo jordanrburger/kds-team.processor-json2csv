@@ -7,7 +7,7 @@ description = "Keboola Connection processor for JSON to CSV conversion"
 license = "MIT"
 
 [[bin]]
-name = "kds-team.processor-json2csv"
+name = "processor"
 path = "src/main.rs"
 
 [dependencies]

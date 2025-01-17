@@ -1,4 +1,4 @@
-use crate::config::{Config, MappingType};
+use crate::config::{Config, MappingType, TableMapping};
 use anyhow::{Context, Result};
 use serde_json::Value;
 use std::collections::{HashMap, HashSet};
@@ -31,11 +31,11 @@ impl Parser {
         let root_value = if self.config.parameters.root_node.is_empty() {
             json
         } else {
-            self.get_root_node(&json)?
+            self.get_root_node(&json)?.clone()
         };
 
         let mut tables = HashMap::new();
-        self.process_value(&root_value, String::new(), &mut tables, None)?;
+        self.process_value(&root_value, "root".to_string(), &mut tables, None)?;
 
         for (table_name, table_data) in tables {
             self.write_csv_table(&table_name, table_data)?;
@@ -80,11 +80,9 @@ impl Parser {
                             row.insert(mapping.destination.clone(), val.to_string());
                         }
                         Some(MappingType::Table(table_mapping)) => {
-                            // Handle nested table mapping
-                            self.process_table_mapping(val, &table_mapping, tables)?;
+                            self.process_table_mapping(val, table_mapping, tables)?;
                         }
                         None => {
-                            // Default behavior for unmapped fields
                             row.insert(key.clone(), val.to_string());
                         }
                     }
@@ -94,7 +92,7 @@ impl Parser {
                     row.insert("JSON_parentId".to_string(), parent_id);
                 }
 
-                let table_name = path.replace('.', "_");
+                let table_name = if path.is_empty() { "root".to_string() } else { path };
                 let table = tables.entry(table_name).or_insert_with(|| TableData {
                     headers: row.keys().cloned().collect(),
                     rows: Vec::new(),
@@ -118,10 +116,49 @@ impl Parser {
     fn process_table_mapping(
         &self,
         value: &Value,
-        mapping: &MappingType,
+        mapping: &TableMapping,
         tables: &mut HashMap<String, TableData>,
     ) -> Result<()> {
-        // Implement table mapping processing
+        let mut table = tables
+            .entry(mapping.destination.clone())
+            .or_insert_with(|| TableData {
+                headers: Vec::new(),
+                rows: Vec::new(),
+                primary_keys: HashSet::new(),
+            });
+
+        match value {
+            Value::Object(obj) => {
+                let mut row = HashMap::new();
+                for (key, val) in obj {
+                    if let Some(field_mapping) = mapping.table_mapping.get(key) {
+                        match field_mapping {
+                            MappingType::Column { mapping } => {
+                                row.insert(mapping.destination.clone(), val.to_string());
+                                if mapping.primary_key {
+                                    table.primary_keys.insert(mapping.destination.clone());
+                                }
+                            }
+                            MappingType::Table(_) => {
+                                // Nested tables not supported in this implementation
+                            }
+                        }
+                    }
+                }
+                if table.headers.is_empty() {
+                    table.headers = row.keys().cloned().collect();
+                }
+                table.rows.push(row);
+            }
+            Value::Array(arr) => {
+                for item in arr {
+                    if let Value::Object(_) = item {
+                        self.process_table_mapping(item, mapping, tables)?;
+                    }
+                }
+            }
+            _ => {}
+        }
         Ok(())
     }
 

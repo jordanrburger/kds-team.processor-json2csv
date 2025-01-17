@@ -7,9 +7,21 @@ RUN cargo build --release
 
 FROM debian:bookworm-slim
 
-WORKDIR /app
-COPY --from=builder /app/target/release/kds-team.processor-json2csv /usr/local/bin/
+WORKDIR /data
+
+# Install necessary runtime dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the binary
+COPY --from=builder /app/target/release/processor /usr/local/bin/
 
 ENV RUST_LOG=info
+ENV APP_DATA_DIR=/data
 
-CMD ["kds-team.processor-json2csv"]
+# Create data directory structure
+RUN mkdir -p /data/in/tables /data/in/files /data/out/tables /data/out/files
+
+ENTRYPOINT ["processor", "--data-dir", "/data"]

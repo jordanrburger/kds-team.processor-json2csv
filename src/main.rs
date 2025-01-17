@@ -19,9 +19,10 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     let config_path = cli.data_dir.join("config.json");
-    let config: config::Config = std::fs::read_to_string(&config_path)
-        .with_context(|| format!("Failed to read config file: {}", config_path.display()))?
-        .pipe(|s| serde_json::from_str(&s))
+    let config_str = std::fs::read_to_string(&config_path)
+        .with_context(|| format!("Failed to read config file: {}", config_path.display()))?;
+    
+    let config: config::Config = serde_json::from_str(&config_str)
         .with_context(|| "Failed to parse config file")?;
 
     config.validate()?;
@@ -52,10 +53,4 @@ fn main() -> Result<()> {
     }
 
     Ok(())
-}
-
-trait Pipe: Sized {
-    fn pipe<T>(self, f: impl FnOnce(Self) -> T) -> T {
-        f(self)
-    }
 }
