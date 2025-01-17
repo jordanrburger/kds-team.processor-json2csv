@@ -3,7 +3,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use anyhow::Result;
 use serde_json::{json, Value};
-use json2csv_processor::config::{Config, InputType, MappingType, Parameters};
+use json2csv_processor::config::{Config, InputType, Parameters};
 use json2csv_processor::parser::Parser;
 
 fn setup_test_dir(test_name: &str) -> Result<PathBuf> {

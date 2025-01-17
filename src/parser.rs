@@ -1,7 +1,7 @@
 use crate::config::{Config, MappingType, TableMapping};
-use anyhow::{Context, Result};
+use anyhow::Result;
 use serde_json::Value;
-use std::collections::{HashMap, HashSet, BTreeMap, BTreeSet};
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::fs;
 use std::io::Write;
@@ -16,17 +16,6 @@ pub struct Parser {
 struct TableData {
     headers: Vec<String>,
     rows: Vec<HashMap<String, String>>,
-    primary_keys: HashSet<String>,
-}
-
-impl TableData {
-    fn new(headers: Vec<String>) -> Self {
-        TableData {
-            headers,
-            rows: Vec::new(),
-            primary_keys: HashSet::new(),
-        }
-    }
 }
 
 impl Parser {
@@ -39,11 +28,8 @@ impl Parser {
     }
 
     pub fn process_file(&mut self, input_path: &Path) -> Result<()> {
-        let file_content = std::fs::read_to_string(input_path)
-            .with_context(|| format!("Failed to read file: {}", input_path.display()))?;
-        
-        let json: Value = serde_json::from_str(&file_content)
-            .with_context(|| format!("Failed to parse JSON from file: {}", input_path.display()))?;
+        let file_content = std::fs::read_to_string(input_path)?;
+        let json: Value = serde_json::from_str(&file_content)?;
 
         let file_name = input_path
             .file_name()
@@ -55,7 +41,6 @@ impl Parser {
             let root_table = self.tables.entry("root".to_string()).or_insert_with(|| TableData {
                 headers: vec!["id".to_string(), "name".to_string(), "keboola_file_name_col".to_string()],
                 rows: Vec::new(),
-                primary_keys: HashSet::new(),
             });
             if !root_table.headers.contains(&"keboola_file_name_col".to_string()) {
                 root_table.headers.push("keboola_file_name_col".to_string());
@@ -195,7 +180,6 @@ impl Parser {
                     TableData {
                         headers: default_headers,
                         rows: Vec::new(),
-                        primary_keys: HashSet::new(),
                     }
                 });
 
@@ -229,63 +213,56 @@ impl Parser {
         Ok(())
     }
 
-    pub fn process_table_mapping(&mut self, value: &Value, mapping: &TableMapping, file_name: &str) -> Result<()> {
-        match value {
-            Value::Array(arr) => {
-                for order in arr {
-                    if let Some(order_obj) = order.as_object() {
-                        let mut row = HashMap::new();
-                        
-                        // Process order ID
-                        if let Some(id) = order_obj.get("id") {
-                            if let Some(MappingType::Column { mapping: col_mapping }) = mapping.table_mapping.get("id") {
-                                row.insert(col_mapping.destination.clone(), self.format_value(id));
-                            }
+    pub fn process_table_mapping(&mut self, value: &Value, mapping: &TableMapping, _file_name: &str) -> Result<()> {
+        if let Value::Array(arr) = value {
+            for order in arr {
+                if let Some(order_obj) = order.as_object() {
+                    let mut row = HashMap::new();
+                    
+                    // Process order ID
+                    if let Some(id) = order_obj.get("id") {
+                        if let Some(MappingType::Column { mapping: col_mapping }) = mapping.table_mapping.get("id") {
+                            row.insert(col_mapping.destination.clone(), self.format_value(id));
                         }
+                    }
 
-                        // Process items
-                        if let Some(items) = order_obj.get("items") {
-                            if let Some(MappingType::Table(table_mapping)) = mapping.table_mapping.get("items") {
-                                let table_name = table_mapping.destination.clone();
-                                let new_rows: Vec<_> = items.as_array().unwrap_or(&vec![]).iter().filter_map(|item| {
-                                    if let Some(item_obj) = item.as_object() {
-                                        let mut item_row = HashMap::new();
-                                        
-                                        // Add order_id to item row
-                                        if let Some(order_id) = order_obj.get("id") {
-                                            item_row.insert("order_id".to_string(), self.format_value(order_id));
-                                        }
+                    // Process items
+                    if let Some(items) = order_obj.get("items") {
+                        if let Some(MappingType::Table(table_mapping)) = mapping.table_mapping.get("items") {
+                            let table_name = table_mapping.destination.clone();
+                            let new_rows: Vec<_> = items.as_array().unwrap_or(&vec![]).iter().filter_map(|item| {
+                                if let Some(item_obj) = item.as_object() {
+                                    let mut item_row = HashMap::new();
+                                    
+                                    // Add order_id to item row
+                                    if let Some(order_id) = order_obj.get("id") {
+                                        item_row.insert("order_id".to_string(), self.format_value(order_id));
+                                    }
 
-                                        // Process item fields
-                                        for (key, mapping_type) in &table_mapping.table_mapping {
-                                            if let Some(value) = item_obj.get(key) {
-                                                match mapping_type {
-                                                    MappingType::Column { mapping: col_mapping } => {
-                                                        item_row.insert(col_mapping.destination.clone(), self.format_value(value));
-                                                    }
-                                                    _ => {}
-                                                }
+                                    // Process item fields
+                                    for (key, mapping_type) in &table_mapping.table_mapping {
+                                        if let Some(value) = item_obj.get(key) {
+                                            if let MappingType::Column { mapping: col_mapping } = mapping_type {
+                                                item_row.insert(col_mapping.destination.clone(), self.format_value(value));
                                             }
                                         }
-
-                                        Some(item_row)
-                                    } else {
-                                        None
                                     }
-                                }).collect();
 
-                                let table = self.tables.entry(table_name.clone()).or_insert_with(|| TableData {
-                                    headers: vec!["item_id".to_string(), "quantity".to_string(), "order_id".to_string()],
-                                    rows: Vec::new(),
-                                    primary_keys: HashSet::new(),
-                                });
-                                table.rows.extend(new_rows);
-                            }
+                                    Some(item_row)
+                                } else {
+                                    None
+                                }
+                            }).collect();
+
+                            let table = self.tables.entry(table_name.clone()).or_insert_with(|| TableData {
+                                headers: vec!["item_id".to_string(), "quantity".to_string(), "order_id".to_string()],
+                                rows: Vec::new(),
+                            });
+                            table.rows.extend(new_rows);
                         }
                     }
                 }
             }
-            _ => {}
         }
 
         Ok(())
