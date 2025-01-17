@@ -28,6 +28,7 @@ pub struct ColumnMapping {
 pub struct TableMapping {
     pub destination: String,
     pub parent_key: Option<ColumnMapping>,
+    #[serde(rename = "tableMapping")]
     pub table_mapping: HashMap<String, MappingType>,
 }
 

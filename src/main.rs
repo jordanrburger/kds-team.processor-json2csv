@@ -1,56 +1,47 @@
-mod config;
-mod parser;
-
-use anyhow::{Context, Result};
-use clap::Parser as ClapParser;
-use glob::glob;
-use log::{error, info};
+use std::env;
+use std::fs;
 use std::path::PathBuf;
+use anyhow::{Context, Result};
+use walkdir::WalkDir;
 
-#[derive(ClapParser)]
-#[command(version, about = "Keboola JSON to CSV Processor")]
-struct Cli {
-    #[arg(long, default_value = "/data")]
-    data_dir: PathBuf,
-}
+use json2csv_processor::config::{Config, InputType};
+use json2csv_processor::parser;
 
 fn main() -> Result<()> {
-    env_logger::init();
-    let cli = Cli::parse();
+    let data_dir = env::var("KBC_DATADIR")
+        .unwrap_or_else(|_| "/data".to_string());
 
-    let config_path = cli.data_dir.join("config.json");
-    let config_str = std::fs::read_to_string(&config_path)
-        .with_context(|| format!("Failed to read config file: {}", config_path.display()))?;
-    
-    let config: config::Config = serde_json::from_str(&config_str)
-        .with_context(|| "Failed to parse config file")?;
-
-    config.validate()?;
+    let config_path = PathBuf::from(&data_dir).join("config.json");
+    let config: Config = serde_json::from_str(&fs::read_to_string(&config_path)?)?;
 
     let input_dir = match config.parameters.in_type {
-        config::InputType::Files => cli.data_dir.join("in/files"),
-        config::InputType::Tables => cli.data_dir.join("in/tables"),
+        InputType::Tables => PathBuf::from(&data_dir).join("in/tables"),
+        InputType::Files => PathBuf::from(&data_dir).join("in/files"),
     };
 
-    let output_dir = cli.data_dir.join("out/tables");
-    std::fs::create_dir_all(&output_dir)?;
+    let output_dir = PathBuf::from(&data_dir).join("out/tables");
 
-    let parser = parser::Parser::new(config, output_dir);
+    // Create output directory if it doesn't exist
+    fs::create_dir_all(&output_dir)?;
 
-    let pattern = input_dir.join("*.json");
-    let pattern_str = pattern.to_string_lossy();
+    // Process all JSON files in the input directory
+    let mut parser = parser::Parser::new(config, output_dir);
 
-    for entry in glob(&pattern_str)? {
-        match entry {
-            Ok(path) => {
-                info!("Processing file: {}", path.display());
-                if let Err(e) = parser.process_file(&path) {
-                    error!("Error processing file {}: {}", path.display(), e);
-                }
+    for entry in WalkDir::new(&input_dir) {
+        let entry = entry?;
+        let path = entry.path();
+
+        if path.is_file() && path.extension().map_or(false, |ext| ext == "json") {
+            println!("Processing file: {}", path.display());
+            if let Err(e) = parser.process_file(&path) {
+                eprintln!("Error processing file {}: {}", path.display(), e);
+                return Err(e);
             }
-            Err(e) => error!("Error in glob pattern: {}", e),
         }
     }
+
+    // Write all tables
+    parser.write_tables()?;
 
     Ok(())
 }
